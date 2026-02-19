@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Notice Board</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .admin-container {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+        }
+        
+        .admin-icon {
+            background: rgba(255, 255, 255, 0.2);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            position: relative;
+            z-index: 100;
+        }
+        
+        .admin-icon:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+        
+        .admin-icon svg {
+            width: 24px;
+            height: 24px;
+            fill: white;
+        }
+        
+        .admin-panel {
+            position: absolute;
+            top: 60px;
+            right: 0;
+            background: rgba(0, 0, 0, 0.9);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            width: 350px;
+            z-index: 99;
+            display: none;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .admin-panel.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .admin-panel h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .login-form, .notice-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        label {
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+        
+        input, textarea {
+            padding: 10px;
+            border-radius: 8px;
+            border: none;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 0.9rem;
+        }
+        
+        input::placeholder, textarea::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        button {
+            padding: 10px;
+            border-radius: 8px;
+            border: none;
+            background: #fdbb2d;
+            color: #1a2a6c;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+        
+        button:hover {
+            background: #ffcc44;
+            transform: translateY(-2px);
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .status {
+            text-align: center;
+            padding: 8px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-size: 0.8rem;
+        }
+        
+        .success {
+            background: rgba(46, 204, 113, 0.3);
+            color: #2ecc71;
+        }
+        
+        .error {
+            background: rgba(231, 76, 60, 0.3);
+            color: #e74c3c;
+        }
+        
+        .notice-time {
+            font-size: 0.8rem;
+            opacity: 0.7;
+            margin-top: 5px;
+            text-align: right;
+        }
+        
+        .main-content {
+            display: flex;
+            justify-content: center;
+        }
+        
+        .notice-board {
+            width: 100%;
+            max-width: 800px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            position: relative;
+            height: 500px;
+        }
+        
+        .notice-board h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .notices-container {
+            height: 400px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .notices-wrapper {
+            position: absolute;
+            width: 100%;
+            animation: continuousScroll 15s linear infinite;
+        }
+        
+        .notice {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            border-left: 5px solid #fdbb2d;
+        }
+        
+        .notice:nth-child(2n) {
+            border-left-color: #b21f1f;
+        }
+        
+        .notice:nth-child(3n) {
+            border-left-color: #1a2a6c;
+        }
+        
+        .notice a {
+            color: #fdbb2d;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        
+        .notice a:hover {
+            text-decoration: underline;
+        }
+        
+        .scroll-controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .scroll-controls button {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 8px 15px;
+            font-size: 0.8rem;
+        }
+        
+        .scroll-controls button:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        @keyframes continuousScroll {
+            0% {
+                transform: translateY(0);
+            }
+            100% {
+                transform: translateY(-50%);
+            }
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        @media (max-width: 768px) {
+            .admin-container {
+                position: static;
+                display: flex;
+                justify-content: center;
+                margin-top: 15px;
+            }
+            
+            .admin-panel {
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                width: 90%;
+                max-width: 350px;
+            }
+            
+            .notice-board {
+                height: 400px;
+            }
+            
+            .notices-container {
+                height: 320px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Student Notice Board</h1>
+            <p class="subtitle">Important announcements and updates for students</p>
+            
+            <div class="admin-container">
+                <div class="admin-icon" id="admin-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/>
+                    </svg>
+                </div>
+                
+                <div class="admin-panel" id="admin-panel">
+                    <h2>Admin Panel</h2>
+                    
+                    <div id="login-section">
+                        <h3>Admin Login</h3>
+                        <form class="login-form" id="login-form">
+                            <div class="form-group">
+                                <label for="email">Email:</label>
+                                <input type="email" id="email" placeholder="Enter admin email" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="password">Password:</label>
+                                <input type="password" id="password" placeholder="Enter admin password" required>
+                            </div>
+                            <button type="submit">Login</button>
+                        </form>
+                        <div id="login-status" class="status"></div>
+                    </div>
+                    
+                    <div id="notice-section" class="hidden">
+                        <h3>Post New Notice</h3>
+                        <form class="notice-form" id="notice-form">
+                            <div class="form-group">
+                                <label for="notice-text">Notice Content:</label>
+                                <textarea id="notice-text" rows="3" placeholder="Enter your notice here. You can include links as well." required></textarea>
+                            </div>
+                            <button type="submit">Post Notice</button>
+                        </form>
+                        <div id="notice-status" class="status"></div>
+                        <button id="logout-btn" style="margin-top: 15px; background: #b21f1f; width: 100%;">Logout</button>
+                    </div>
+                </div>
+            </div>
+        </header>
+        
+        <div class="main-content">
+            <div class="notice-board">
+                <h2>Live Notices</h2>
+                <div class="notices-container">
+                    <div class="notices-wrapper" id="notices-wrapper">
+                        <div class="notices" id="notices">
+                            <!-- Notices will be added here dynamically from Firestore -->
+                        </div>
+                        <!-- Duplicate notices for continuous scrolling -->
+                        <div class="notices" id="notices-duplicate">
+                            <!-- Duplicate notices will be added here dynamically from Firestore -->
+                        </div>
+                    </div>
+                </div>
+                <div class="scroll-controls">
+                    <button id="pause-btn">Pause</button>
+                    <button id="resume-btn" class="hidden">Resume</button>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Student Notice Board &copy; 2025 | Secure Notice Board System</p>
+        </footer>
+    </div>
+
+    <!-- Firebase SDK (Firestore) -->
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+        import { 
+            getFirestore, 
+            collection, 
+            addDoc, 
+            query, 
+            orderBy, 
+            onSnapshot,
+            Timestamp 
+        } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-analytics.js";
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCzCp_EGGmSolCSy8iQNrQAE-vGO8vTKIo",
+            authDomain: "education-toppers-hub-4d045.firebaseapp.com",
+            databaseURL: "https://education-toppers-hub-4d045-default-rtdb.firebaseio.com",
+            projectId: "education-toppers-hub-4d045",
+            storageBucket: "education-toppers-hub-4d045.firebasestorage.app",
+            messagingSenderId: "1065320525597",
+            appId: "1:1065320525597:web:ca166ff0d6e257492f3bf4",
+            measurementId: "G-QTF6FHGEFZ"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const db = getFirestore(app);
+        
+        // DOM elements
+        const adminIcon = document.getElementById('admin-icon');
+        const adminPanel = document.getElementById('admin-panel');
+        const loginForm = document.getElementById('login-form');
+        const noticeForm = document.getElementById('notice-form');
+        const loginSection = document.getElementById('login-section');
+        const noticeSection = document.getElementById('notice-section');
+        const loginStatus = document.getElementById('login-status');
+        const noticeStatus = document.getElementById('notice-status');
+        const logoutBtn = document.getElementById('logout-btn');
+        const noticesContainer = document.getElementById('notices');
+        const noticesDuplicate = document.getElementById('notices-duplicate');
+        const noticesWrapper = document.getElementById('notices-wrapper');
+        const pauseBtn = document.getElementById('pause-btn');
+        const resumeBtn = document.getElementById('resume-btn');
+        
+        // Admin credentials
+        const ADMIN_EMAIL = "theworldofcybersecurity@gmail.com";
+        const ADMIN_PASSWORD = "9955188086faiz";
+        
+        // Scrolling variables
+        let isScrolling = true;
+        
+        // Check if user is already logged in
+        window.addEventListener('DOMContentLoaded', () => {
+            const isLoggedIn = localStorage.getItem('adminLoggedIn');
+            if (isLoggedIn === 'true') {
+                showNoticeSection();
+            }
+            
+            // Load notices from Firestore
+            loadNotices();
+        });
+        
+        // Admin icon click handler
+        adminIcon.addEventListener('click', (e) => {
+            e.stopPropagation();
+            adminPanel.classList.toggle('active');
+        });
+        
+        // Close admin panel when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!adminPanel.contains(e.target) && !adminIcon.contains(e.target)) {
+                adminPanel.classList.remove('active');
+            }
+        });
+        
+        // Login form handler
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
+                loginStatus.textContent = "Login successful!";
+                loginStatus.className = "status success";
+                localStorage.setItem('adminLoggedIn', 'true');
+                
+                setTimeout(() => {
+                    showNoticeSection();
+                    loginStatus.textContent = "";
+                }, 1000);
+            } else {
+                loginStatus.textContent = "Invalid email or password!";
+                loginStatus.className = "status error";
+            }
+        });
+        
+        // Notice form handler
+        noticeForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const noticeText = document.getElementById('notice-text').value;
+            
+            if (noticeText.trim() !== '') {
+                // Save notice to Firestore
+                await saveNotice(noticeText);
+                noticeForm.reset();
+            }
+        });
+        
+        // Logout handler
+        logoutBtn.addEventListener('click', () => {
+            localStorage.removeItem('adminLoggedIn');
+            showLoginSection();
+            adminPanel.classList.remove('active');
+        });
+        
+        // Scroll control handlers
+        pauseBtn.addEventListener('click', () => {
+            pauseScrolling();
+        });
+        
+        resumeBtn.addEventListener('click', () => {
+            resumeScrolling();
+        });
+        
+        // Show notice section after login
+        function showNoticeSection() {
+            loginSection.classList.add('hidden');
+            noticeSection.classList.remove('hidden');
+            loginStatus.textContent = "";
+        }
+        
+        // Show login section after logout
+        function showLoginSection() {
+            noticeSection.classList.add('hidden');
+            loginSection.classList.remove('hidden');
+            loginForm.reset();
+            loginStatus.textContent = "";
+        }
+        
+        // Save notice to Firestore
+        async function saveNotice(text) {
+            try {
+                await addDoc(collection(db, "notices"), {
+                    text: text,
+                    timestamp: Timestamp.now()
+                });
+                
+                noticeStatus.textContent = "Notice posted successfully!";
+                noticeStatus.className = "status success";
+                
+                setTimeout(() => {
+                    noticeStatus.textContent = "";
+                    noticeStatus.className = "status";
+                }, 3000);
+                
+            } catch (error) {
+                noticeStatus.textContent = "Error posting notice: " + error.message;
+                noticeStatus.className = "status error";
+            }
+        }
+        
+        // Load notices from Firestore
+        function loadNotices() {
+            const noticesRef = collection(db, "notices");
+            const q = query(noticesRef, orderBy("timestamp", "desc"));
+            
+            onSnapshot(q, (snapshot) => {
+                // Clear existing notices
+                noticesContainer.innerHTML = '';
+                noticesDuplicate.innerHTML = '';
+                
+                if (snapshot.empty) {
+                    // No notices in database - show nothing
+                    // The containers will remain empty
+                    return;
+                }
+                
+                const noticesArray = [];
+                snapshot.forEach((doc) => {
+                    const notice = {
+                        id: doc.id,
+                        ...doc.data()
+                    };
+                    noticesArray.push(notice);
+                });
+                
+                // Add notices to main container
+                noticesArray.forEach(notice => {
+                    const timestamp = notice.timestamp?.toDate() || new Date();
+                    addNoticeToDOM(notice.text, timestamp, notice.id, noticesContainer);
+                });
+                
+                // Add duplicate notices for continuous scrolling
+                noticesArray.forEach(notice => {
+                    const timestamp = notice.timestamp?.toDate() || new Date();
+                    addNoticeToDOM(notice.text, timestamp, notice.id + '-dup', noticesDuplicate);
+                });
+                
+                // Reset and restart scrolling animation
+                initializeContinuousScrolling();
+            }, (error) => {
+                console.error("Error loading notices: ", error);
+            });
+        }
+        
+        // Add a notice to the specified container
+        function addNoticeToDOM(text, timestamp, id, container) {
+            const noticeDiv = document.createElement('div');
+            noticeDiv.className = 'notice';
+            noticeDiv.dataset.id = id;
+            
+            // Convert URLs to clickable links
+            const textWithLinks = text.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>');
+            
+            // Format timestamp
+            const timeString = timestamp.toLocaleString();
+            
+            noticeDiv.innerHTML = `
+                <p>${textWithLinks}</p>
+                <div class="notice-time">${timeString}</div>
+            `;
+            
+            container.appendChild(noticeDiv);
+        }
+        
+        // Initialize continuous scrolling
+        function initializeContinuousScrolling() {
+            // Remove existing animation
+            noticesWrapper.style.animation = 'none';
+            
+            // Force reflow
+            void noticesWrapper.offsetHeight;
+            
+            // Only apply animation if there are notices
+            if (noticesContainer.children.length > 0) {
+                // Add animation with faster speed (15 seconds)
+                noticesWrapper.style.animation = 'continuousScroll 15s linear infinite';
+                
+                // Ensure animation is running if not paused
+                if (!isScrolling) {
+                    noticesWrapper.style.animationPlayState = 'paused';
+                }
+            }
+        }
+        
+        // Pause scrolling
+        function pauseScrolling() {
+            noticesWrapper.style.animationPlayState = 'paused';
+            pauseBtn.classList.add('hidden');
+            resumeBtn.classList.remove('hidden');
+            isScrolling = false;
+        }
+        
+        // Resume scrolling
+        function resumeScrolling() {
+            noticesWrapper.style.animationPlayState = 'running';
+            resumeBtn.classList.add('hidden');
+            pauseBtn.classList.remove('hidden');
+            isScrolling = true;
+        }
+    </script>
+</body>
+</html>
